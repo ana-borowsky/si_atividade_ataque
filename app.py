@@ -1,6 +1,46 @@
 import json
 import random
 import hashlib
+import itertools
+import string
+import time
+
+def code_cracker_3000():
+        quantity = users_quantity()
+        if quantity <= 4:
+            print("\nCadastre ao menos 4 usuários no sistema!")
+        else:
+            print('\nEste é o CodeCracker3000!\n')
+            print('\nO programa realizará a quebra das senhas dos últimos 4 usuários cadastrados no programa.')
+            print('\nIniciando a quebra de senhas...')
+            start_time = time.time()
+            hash_alvo = '098f6bcd4621d373cade4e832627b4f6'
+            resultado = brute_force_md5(hash_alvo, max_length = 4)
+            end_time = time.time()
+            total_time = end_time - start_time
+            print(resultado)
+            print(f'Tempo de execução: {total_time:.2f} segundos')
+
+def users_quantity():
+    with open('users.json', 'r') as file:
+        users = json.load(file)
+
+    users_quantity = len(users)
+    return users_quantity
+
+def password_hash(password):
+    return hashlib.md5(password.encode()).hexdigest()
+
+def brute_force_md5(target_password, max_length = 6):
+    chars = string.ascii_lowercase + string.digits
+
+    for length in range(1, max_length + 1):
+        for attempt in itertools.product(chars, repeat=length):
+            attempt = ''.join(attempt)
+            if password_hash(attempt) == target_password:
+                return f'Senha encontrada: {attempt}'
+
+    return 'Senha não encontrada'
 
 def generateUniqueId(existingIds):
     while True:
@@ -12,7 +52,7 @@ def createUser(name, username, password):
     userData = {
         "name": name,
         "username": username,
-        "password": hashlib.md5(password.encode()).hexdigest(),
+        "password": password_hash(password),
     }
 
     with open("users.json", "r+") as file:
@@ -46,36 +86,43 @@ def main():
         userOption = input("\nEscolha a opção desejada:\n \
         - [ 1 ] Cadastro \n \
         - [ 2 ] Login\n \
-        - [ 3 ] Sair \n\n \
+        - [ 3 ] CodeCracker3000!\n \
+        - [ 4 ] Sair \n\n \
         > Sua opção: ")
 
-        if userOption == "1":
-            print("Faça seu cadastro\n")
+        match(userOption):
+            case '1':
+                print("Faça seu cadastro\n")
 
-            name = input("Insira seu nome: ")
-            username = input("Insira seu nome de usuário: ")
-            password = input("Insira sua senha: ")
+                name = input("Insira seu nome: ")
+                username = input("Insira seu nome de usuário: ")
+                password = input("Insira sua senha: ")
 
-            createUser(name, username, password)
-            print(f"\nUsuário cadastrado com sucesso!")
+                createUser(name, username, password)
+                print(f"\nUsuário cadastrado com sucesso!")
 
-        elif userOption == "2":
-            print("\nFaça seu login\n")
-            username = input("Insira seu nome de usuário: ")
-            password = input("Insira sua senha: ")
+            case '2':
+                print("\nFaça seu login\n")
+                username = input("Insira seu nome de usuário: ")
+                password = input("Insira sua senha: ")
 
-            user = authenticateUser(username, password)
+                user = authenticateUser(username, password)
 
-            if user:
-                print(f"\nLogin bem-sucedido! Boas vindas, {user['name']}!\n")
-            else:
-                print("\nNome de usuário ou senha incorretos!")
+                if user:
+                    print(f"\nLogin bem-sucedido! Boas vindas, {user['name']}!\n")
+                else:
+                    print("\nNome de usuário ou senha incorretos!")
 
-        elif userOption == "3":
-            print("\nMuito obrigada por usar o programa. Até mais!\n\n")
-            break
+            case '3':
+                code_cracker_3000()
 
-        else:
-            print("\nOpção inválida!")
+            case '4':
+                print("\nMuito obrigada por usar o programa. Até mais!\n\n")
+                break
+
+            case _:
+                print("\nOpção inválida!")
 
 main()
+
+
