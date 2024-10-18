@@ -5,20 +5,29 @@ import itertools
 import string
 import time
 
+def take_last_four_users():
+    with open('users.json', 'r') as file:
+        users = json.load(file)
+    last_four_users = list(users.items())[-4:]
+
+    return [info['password'] for _, info in last_four_users]
+
 def code_cracker_3000():
         quantity = users_quantity()
-        if quantity <= 4:
+        if quantity < 4:
             print("\nCadastre ao menos 4 usuários no sistema!")
         else:
             print('\nEste é o CodeCracker3000!\n')
             print('\nO programa realizará a quebra das senhas dos últimos 4 usuários cadastrados no programa.')
             print('\nIniciando a quebra de senhas...')
-            start_time = time.time()
-            hash_alvo = '098f6bcd4621d373cade4e832627b4f6'
-            resultado = brute_force_md5(hash_alvo, max_length = 4)
-            end_time = time.time()
-            total_time = end_time - start_time
-            print(resultado)
+            hashes_to_break = take_last_four_users()
+            for hash in hashes_to_break:
+                start_time = time.time()
+                # print(hash)
+                result = brute_force_md5(hash, max_length = 3)
+                end_time = time.time()
+                total_time = end_time - start_time
+                print("Resultado para um usuário: ", result)
             print(f'Tempo de execução: {total_time:.2f} segundos')
 
 def users_quantity():
@@ -31,12 +40,13 @@ def users_quantity():
 def password_hash(password):
     return hashlib.md5(password.encode()).hexdigest()
 
-def brute_force_md5(target_password, max_length = 6):
+def brute_force_md5(target_password, max_length = 3):
     chars = string.ascii_lowercase + string.digits
 
     for length in range(1, max_length + 1):
-        for attempt in itertools.product(chars, repeat=length):
+        for attempt in itertools.product(chars, repeat = length):
             attempt = ''.join(attempt)
+            # print(attempt)
             if password_hash(attempt) == target_password:
                 return f'Senha encontrada: {attempt}'
 
